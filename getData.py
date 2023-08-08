@@ -2,11 +2,10 @@ import requests
 import time
 from datetime import timedelta
 from ratelimit import limits, RateLimitException, sleep_and_retry
-from cleanData import *
 import pickle
 
 ONE_MINUTE = 60
-MAX_CALLS_PER_MINUTE = 65
+MAX_CALLS_PER_MINUTE = 70
 
 @sleep_and_retry
 @limits(calls=MAX_CALLS_PER_MINUTE, period=ONE_MINUTE)
@@ -14,7 +13,7 @@ def call_api(url):
     #This function performs an API call using the given URL as long as the call does not fail
     req = requests.get(url)
     while req.status_code!=200:    
-        time.sleep(10)
+        time.sleep(5)
         req = requests.get(url)
     return req
 
@@ -51,51 +50,82 @@ def get_data(urls,c):
 
     # Loop through the master list (Each object is a dictionary - Master list is a list of dictionaries)
     for obj in master_list:
-        # Add symbol as it is required irrespective of the type of data
-        if obj['symbol']:
-            temp.append(obj['symbol'])
-
+        
         # Perform clean up for organizational data
         if c=="Organizational Data":
+            if obj['Symbol']:
+                temp.append(obj['Symbol'])
+            else:
+                continue
             if obj["Name"]:
                 temp.append(obj["Name"])
+            else:
+                temp.append("NA")
             if obj["Industry"]:
                 temp.append(obj["Industry"])
+            else:
+                temp.append("NA")
             if obj["PERatio"]:
                 temp.append(obj["PERatio"])
+            else:
+                temp.append("NA")
+            
 
         # Perform clean up for balance sheet data
-        elif obj["quarterlyReports"]:
-            if c=="Balance Sheet Data":
-                temp.append(obj["quarterlyReports"][0]['totalShareholderEquity'])
-                if (obj["quarterlyReports"][0]['currentDebt']=="None"):
+        elif c=="Balance Sheet Data":
+            if obj['symbol']:
+                temp.append(obj['symbol'])
+            else:
+                continue
+                
+            if obj["quarterlyReports"]==[]:
+                temp.append("NA")
+                temp.append("NA")
+            else:
+                if obj["quarterlyReports"][0]['totalShareholderEquity']=='None':
+                    temp.append("NA")
+                else:
+                    temp.append(obj["quarterlyReports"][0]['totalShareholderEquity'])
+                if (obj["quarterlyReports"][0]['currentDebt']=='None'):
                     obj["quarterlyReports"][0]['currentDebt'] = 0
-                if (obj["quarterlyReports"][0]['shortTermDebt']=="None"):
+                if (obj["quarterlyReports"][0]['shortTermDebt']=='None'):
                     obj["quarterlyReports"][0]['shortTermDebt'] = 0
-                if (obj["quarterlyReports"][0]['longTermDebt']=="None"):
+                if (obj["quarterlyReports"][0]['longTermDebt']=='None'):
                     obj["quarterlyReports"][0]['longTermDebt'] = 0
-                if (obj["quarterlyReports"][0]['currentLongTermDebt']=="None"):
+                if (obj["quarterlyReports"][0]['currentLongTermDebt']=='None'):
                     obj["quarterlyReports"][0]['currentLongTermDebt'] = 0
-                if (obj["quarterlyReports"][0]['longTermDebtNoncurrent']=="None"):
+                if (obj["quarterlyReports"][0]['longTermDebtNoncurrent']=='None'):
                     obj["quarterlyReports"][0]['longTermDebtNoncurrent'] = 0
-                if (obj["quarterlyReports"][0]['shortLongTermDebtTotal']=="None"):
+                if (obj["quarterlyReports"][0]['shortLongTermDebtTotal']=='None'):
                     obj["quarterlyReports"][0]['shortLongTermDebtTotal'] = 0
                 temp.append(float(obj["quarterlyReports"][0]['currentDebt']) + float(obj['quarterlyReports'][0]['shortTermDebt']) + float(obj['quarterlyReports'][0]['longTermDebt']) + float(obj['quarterlyReports'][0]['currentLongTermDebt']) + float(obj['quarterlyReports'][0]['longTermDebtNoncurrent']) + float(obj['quarterlyReports'][0]['shortLongTermDebtTotal']))
-
-            # Perform clean up for income statement data
-            elif c=="Income Statement Data":
-                temp.append(obj["quarterlyReports"][0]['netInterestIncome'])
-                temp.append(obj["quarterlyReports"][0]['netIncome'])
+                
+            
+        # Perform clean up for income statement data
+        elif c=="Income Statement Data":
+            if obj['symbol']:
+                temp.append(obj['symbol'])
+            else:
+                continue
+            if(obj["quarterlyReports"]==[]):
+                temp.append("NA")
+                temp.append("NA")
+            else:
+                if(obj["quarterlyReports"][0]['netInterestIncome']=='None'):
+                    temp.append("NA")
+                else:
+                    temp.append(obj["quarterlyReports"][0]['netInterestIncome'])
+                if(obj["quarterlyReports"][0]['netIncome']=='None'):
+                    temp.append("NA")
+                else:
+                    temp.append(obj["quarterlyReports"][0]['netIncome'])
 
         # Add all data to final master list
         final_master_list.append(temp)
 
-    temp = []  # Empty temp for later use
-    if c=="Balance Sheet Data" or c=="Income Statement Data":
-        cleanUp(final_master_list)
+    temp = []
         
     print(c," SUCCESSFULLY DOWNLOADED")
-
     return final_master_list
                 
             

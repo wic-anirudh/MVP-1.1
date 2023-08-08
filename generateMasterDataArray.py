@@ -11,6 +11,12 @@ def compile_data(f_o_list, f_m_bs_list, f_m_is_list):
     master_data = []
     temp_arr = []
     count = 1
+
+    #print("#1", f_o_list)
+    #print((master_data[0]))
+    print((f_m_bs_list[0:20]))
+    print(f_m_is_list[0:20])
+    
     for i in range(len(f_o_list)):
         if(f_o_list[i] == 'None'):
             f_o_list[i] = 0
@@ -23,24 +29,29 @@ def compile_data(f_o_list, f_m_bs_list, f_m_is_list):
             master_data.append(temp_arr)
             temp_arr = []
 
-    #print((f_o_list[0]))
-    #print(master_data[0])
-    #print(f_m_bs_list)
-    #print(f_m_is_list[0])
-    
+    #print("#2", f_o_list)
+    print((master_data[0]))
+    print((f_m_bs_list[0:20]))
+    print(f_m_is_list[0:20])
     # REMOVE STOCKS FROM BS LIST NOT IN ORG LIST
     f_m_bs_list = removeFromList(f_m_bs_list,master_data)
 
     # REMOVE STOCKS FROM IS LIST NOT IN ORG LIST
     f_m_is_list = removeFromList(f_m_is_list,master_data)
 
+    print(len(master_data))
+    print(len(f_m_bs_list))
+    print(len(f_m_is_list))
     checker = 0
     loop_argument = 0
     iterator = 0
 
     # ASSEMBLE
     # Use linked list to speed up deletions
-    while loop_argument<len(master_data):        
+    z = 1
+    while loop_argument<len(master_data):
+        print("Iter# ",z)
+        print("Loop arg ",loop_argument)
         if(f_m_bs_list[loop_argument][0]==master_data[loop_argument][0]):
             for j in range(len(f_m_bs_list[loop_argument])):
                 if(j!=0):
@@ -62,6 +73,7 @@ def compile_data(f_o_list, f_m_bs_list, f_m_is_list):
                 else:
                     loop_argument+=1
                     checker = 0
+        z+=1
                        
 
     print("COMPILATION COMPLETED")
