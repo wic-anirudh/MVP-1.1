@@ -7,8 +7,6 @@ from getData import *
 from xlsxFuncs import *
 import pickle
 from cleanData import *
-#import sqlite3
-#from generateMasterTable import *
 
 # Using Alpha Vantage API Premium Version ($49.99/month)
 # 75 calls per minute
@@ -30,7 +28,6 @@ print("OBTAINING LIST OF ACTIVE STOCKS")
 try:
     with open("active_stocks.pkl", "rb") as file:
         active_stocks = pickle.load(file)
-        #print(active_stocks[0])
         print("ACTIVE STOCKS LOADED")
 except FileNotFoundError:
     active_stocks = get_active_stocks()
@@ -63,7 +60,6 @@ try:
     with open("bs_data.pkl", "rb") as file:
         balance_sheet_data = pickle.load(file)
         balance_sheet_data = balance_sheet_data[0]
-        #print(balance_sheet_data)
         print("BALANCE SHEET DATA LOADED")
 except FileNotFoundError:
     balance_sheet_data = get_data(balance_sheet_urls,"Balance Sheet Data")
@@ -89,7 +85,6 @@ income_statement_data = cleanUp(income_statement_data,2)
 
 print("COMPILING ALL DATA TO ONE ARRAY")
 master_data = compile_data(org_data,balance_sheet_data,income_statement_data)
-#print(master_data)
 
 print("CREATING MASTER SPREADSHEET")
 createSpreadsheet(master_data)
